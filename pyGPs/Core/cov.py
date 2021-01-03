@@ -514,8 +514,8 @@ class SM(Kernel):
             maxshift = np.min(np.max(np.max(np.sqrt(d2))),1e-6)
             s[i, :] = old_div(1., np.abs(maxshift * np.random.ranf(Q)))
         hypinit[:Q] = np.log(w)
-        hypinit[Q + np.arange(0, Q * D)] = np.log(np.ndarray.flatten(m)).T
-        hypinit[Q + Q * D + np.arange(0, Q * D)] = np.log(np.ndarray.flatten(s)).T
+        hypinit[Q + np.arange(0, Q * D)] = np.log(np.ndarray.flatten(m)).T.reshape(Q,)
+        hypinit[Q + Q * D + np.arange(0, Q * D)] = np.log(np.ndarray.flatten(s)).T.reshape(Q,)
         self.hyp = hypinit
 
     def getCovMatrix(self,x=None,z=None,mode=None):

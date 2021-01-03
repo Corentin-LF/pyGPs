@@ -493,12 +493,13 @@ class SM(Kernel):
         """
         x = np.atleast_2d(x)
         y = np.atleast_2d(y)
-        (n, D) = x.shape
+       	(n, D) = x.shape
         Q = self.para[0]
-        w = old_div(np.std(y), Q)
-        m = np.ones((D, Q))
-        s = np.ones((D, Q))
-        hypinit = (Q + 2 * D * Q)*[1]
+        w = np.zeros((Q))
+        m = np.zeros((D, Q))
+        s = np.zeros((D, Q))
+        w[:] = old_div(np.std(y), Q)
+        hypinit = np.zeros(Q + 2 * D * Q)
 
         for i in range(D):
             # Calculate distances
@@ -507,16 +508,16 @@ class SM(Kernel):
             if n > 1:
                 d2[d2 == 0] = d2[0, 1]
             else:
-                d2[d2 == 0] = 1.0
-            minshift = np.max(np.min(np.min(np.sqrt(d2))),1e-6)
+                d2[d2 == 0] = 1
+            minshift = np.min(np.min(np.sqrt(d2)))
             nyquist = old_div(0.5, minshift)
-            m[i, :] = nyquist * np.random.ranf(Q)
-            maxshift = np.min(np.max(np.max(np.sqrt(d2))),1e-6)
-            s[i, :] = old_div(1., np.abs(maxshift * np.random.ranf(Q)))
+            m[i, :] = nyquist * np.random.ranf((1, Q))
+            maxshift = np.max(np.max(np.sqrt(d2)))
+            s[i, :] = old_div(1., np.abs(maxshift * np.random.ranf((1, Q))))
         hypinit[:Q] = np.log(w)
-        hypinit[Q + np.arange(0, Q * D)] = np.log(np.ndarray.flatten(m)).T.reshape(Q,)
-        hypinit[Q + Q * D + np.arange(0, Q * D)] = np.log(np.ndarray.flatten(s)).T.reshape(Q,)
-        self.hyp = hypinit
+        hypinit[Q + np.arange(0, Q * D)] = np.log(m[:]).T.reshape(Q,)
+        hypinit[Q + Q * D + np.arange(0, Q * D)] = np.log(s[:]).T.reshape(Q,)
+        self.hyp = list(hypinit)
 
     def getCovMatrix(self,x=None,z=None,mode=None):
         self.checkInputGetCovMatrix(x,z,mode)

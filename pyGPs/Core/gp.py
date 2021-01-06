@@ -248,7 +248,7 @@ class GP(object):
 
 
 
-    def optimize(self, x=None, y=None, numIterations=500):
+    def optimize(self, x=None, y=None, numIterations=1000):
         '''
         Train optimal hyperparameters based on training data,
         adjust new hyperparameters to all mean/cov/lik functions.

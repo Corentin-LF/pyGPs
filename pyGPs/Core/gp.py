@@ -248,7 +248,7 @@ class GP(object):
 
 
 
-    def optimize(self, x=None, y=None, numIterations=1000):
+    def optimize40(self, x=None, y=None, numIterations=40):
         '''
         Train optimal hyperparameters based on training data,
         adjust new hyperparameters to all mean/cov/lik functions.
@@ -284,6 +284,43 @@ class GP(object):
         self.optimizer._apply_in_objects(optimalHyp)
         self.getPosterior()
 
+        
+        
+    def optimize(self, x=None, y=None, numIterations=1000):
+        '''
+        Train optimal hyperparameters based on training data,
+        adjust new hyperparameters to all mean/cov/lik functions.
+
+        :param x: training inputs in shape (n,D)
+        :param y: training labels in shape (n,1)
+        '''
+        # check wether the number of inputs and labels match
+        if x is not None and y is not None:
+            assert x.shape[0] == y.shape[0], "number of inputs and labels does not match"
+
+        # check the shape of inputs
+        # transform to the correct shape
+        if not x is None:
+            if x.ndim == 1:
+                x = np.reshape(x, (x.shape[0],1))
+            self.x = x
+
+        if not y is None:
+            if y.ndim == 1:
+                y = np.reshape(y, (y.shape[0],1))
+            self.y = y
+
+        if self.usingDefaultMean and self.meanfunc is None:
+            c = np.mean(y)
+            self.meanfunc = mean.Const(c)    # adapt default prior mean wrt. training labels
+
+        # optimize
+        optimalHyp, optimalNlZ = self.optimizer.findMin(self.x, self.y, numIters = numIterations)
+        self.nlZ = optimalNlZ
+
+        # apply optimal hyp to all mean/cov/lik functions here
+        self.optimizer._apply_in_objects(optimalHyp)
+        self.getPosterior()
 
 
     def getPosterior(self, x=None, y=None, der=True):
